@@ -1,0 +1,11 @@
+{
+  "name": "logo-music-animation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.8.2"
+  }
+}

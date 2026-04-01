@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Logo Music Animation Source</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+      }
+
+      .stage {
+        width: 420px;
+        height: 420px;
+        display: grid;
+        place-items: center;
+        background: #000;
+      }
+
+      svg {
+        width: 290px;
+        height: 290px;
+        display: block;
+        overflow: visible;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <svg
+        viewBox="0 0 563.45258 563.45117"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Animated music logo"
+      >
+        <g id="logo-group">
+          <g id="logo-top" transform="translate(-737.18488,297.13641)">
+            <g transform="matrix(1.4416707,0,0,1.4416707,653.96732,-375.83087)">
+              <path
+                fill="#ebe7e3"
+                d="M -630.67969,300.45703 V 146.25781 a 15,15 45 0 0 -15,-15 h -51.2539 -171.91407 a 30,30 135 0 0 -30,30 l 0,737.69727 a 30,30 45 0 0 30,30 h 111.91407 a 30,30 135 0 0 30,-30 V 330.45703 a 15,15 135 0 1 15,-15 h 66.2539 a 15,15 135 0 0 15,-15 z"
+                transform="matrix(0,-0.48995155,0.48995155,0,-6.5869509,5.0258981)"
+              />
+            </g>
+          </g>
+          <g id="logo-mid" transform="translate(-737.18488,297.13641)">
+            <g transform="matrix(1.4416707,0,0,1.4416707,637.22782,-375.83087)">
+              <path
+                fill="#ebe7e3"
+                d="m -399.92383,131.25781 h -14.11914 -186.0332 a 15,15 135 0 0 -15,15 v 154.19922 a 15,15 45 0 0 15,15 14.56623,14.56623 46.732681 0 1 14.11914,15 l 0,508.28516 a 30,30 45 0 0 30,30 h 111.91406 a 30,30 135 0 0 30,-30 V 330.45703 a 15,15 135 0 1 15,-15 14.56623,14.56623 133.26732 0 0 14.11914,-15 V 146.25781 a 15,15 45 0 0 -15,-15 z"
+                transform="matrix(0,-0.48995155,0.48995155,0,5.024225,5.0258565)"
+              />
+            </g>
+          </g>
+          <g id="logo-bot" transform="translate(-737.18488,297.13641)">
+            <g transform="matrix(1.4416707,0,0,1.4416707,637.22782,-375.83087)">
+              <path
+                fill="#ebe7e3"
+                d="m -131.15234,131.25781 h -111.91407 -111.2539 a 15,15 135 0 0 -15,15 v 154.19922 a 15,15 45 0 0 15,15 h 66.2539 a 15,15 45 0 1 15,15 l 0,568.49805 a 30,30 45 0 0 30,30 l 111.91407,0 a 30,30 135 0 0 30,-30 l 0,-737.69727 a 30,30 45 0 0 -30,-30 z"
+                transform="matrix(0,-0.48995155,0.48995155,0,5.024225,5.0258565)"
+              />
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <script>
+      window.ANIMATION_CONFIG = {
+        baseColor: "#ebe7e3",
+        pressedColor: "#d7d1cc",
+        idleHold: 4.5,
+        shrinkScale: 0.92,
+        keyTapScale: 0.91,
+        shrinkDuration: 0.2,
+        turnDuration: 0.52,
+        keyDownDuration: 0.075,
+        keyUpDuration: 0.12,
+        keyGap: 0.19,
+        keyStart: 0.72,
+        pauseAfterKeys: 0.18,
+        returnDuration: 0.62
+      };
+
+      (() => {
+        const config = window.ANIMATION_CONFIG;
+
+        const leftKeyStart = config.keyStart;
+        const centerKeyStart = leftKeyStart + config.keyGap;
+        const rightKeyStart = centerKeyStart + config.keyGap;
+        const rightKeyEnd = rightKeyStart + config.keyDownDuration + config.keyUpDuration;
+        const returnStart = rightKeyEnd + config.pauseAfterKeys;
+        const motionDuration = returnStart + config.returnDuration;
+
+        config.motionDuration = motionDuration;
+        config.totalDuration = motionDuration + config.idleHold;
+
+        const group = document.getElementById("logo-group");
+        const topSegment = document.getElementById("logo-top");
+        const midSegment = document.getElementById("logo-mid");
+        const botSegment = document.getElementById("logo-bot");
+
+        const leftSegment = botSegment;
+        const centerSegment = midSegment;
+        const rightSegment = topSegment;
+
+        const leftPath = leftSegment.querySelector("path");
+        const centerPath = centerSegment.querySelector("path");
+        const rightPath = rightSegment.querySelector("path");
+
+        const clamp01 = (value) => Math.min(1, Math.max(0, value));
+        const mix = (start, end, progress) => start + (end - start) * progress;
+
+        const cubicBezier = (x1, y1, x2, y2) => {
+          const cx = 3 * x1;
+          const bx = 3 * (x2 - x1) - cx;
+          const ax = 1 - cx - bx;
+          const cy = 3 * y1;
+          const by = 3 * (y2 - y1) - cy;
+          const ay = 1 - cy - by;
+
+          const sampleX = (t) => ((ax * t + bx) * t + cx) * t;
+          const sampleY = (t) => ((ay * t + by) * t + cy) * t;
+          const sampleDerivativeX = (t) => (3 * ax * t + 2 * bx) * t + cx;
+
+          const solveT = (x) => {
+            let t = clamp01(x);
+
+            for (let index = 0; index < 8; index += 1) {
+              const slope = sampleDerivativeX(t);
+              if (Math.abs(slope) < 1e-6) break;
+              t -= (sampleX(t) - x) / slope;
+            }
+
+            let lower = 0;
+            let upper = 1;
+            t = clamp01(t);
+
+            for (let index = 0; index < 12; index += 1) {
+              const currentX = sampleX(t);
+              if (Math.abs(currentX - x) < 1e-6) break;
+              if (currentX < x) lower = t;
+              else upper = t;
+              t = (lower + upper) / 2;
+            }
+
+            return t;
+          };
+
+          return (x) => sampleY(solveT(clamp01(x)));
+        };
+
+        const easeShrink = cubicBezier(0.22, 1, 0.36, 1);
+        const easeTurn = cubicBezier(0.65, 0, 0.35, 1);
+        const easeKeyDown = cubicBezier(0.3, 0, 0.18, 1);
+        const easeKeyUp = cubicBezier(0.22, 1, 0.36, 1);
+        const easeReturn = cubicBezier(0.5, 0, 0.2, 1);
+
+        const hexToRgb = (hex) => {
+          const clean = hex.replace("#", "");
+          return {
+            r: parseInt(clean.slice(0, 2), 16),
+            g: parseInt(clean.slice(2, 4), 16),
+            b: parseInt(clean.slice(4, 6), 16)
+          };
+        };
+
+        const rgbString = ({ r, g, b }) =>
+          `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+
+        const mixColor = (from, to, progress) => {
+          const start = hexToRgb(from);
+          const end = hexToRgb(to);
+          return rgbString({
+            r: mix(start.r, end.r, progress),
+            g: mix(start.g, end.g, progress),
+            b: mix(start.b, end.b, progress)
+          });
+        };
+
+        const getCenter = (element) => {
+          const box = element.getBBox();
+          return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        };
+
+        const baseTransforms = new Map([
+          [group, group.getAttribute("transform") || ""],
+          [leftSegment, leftSegment.getAttribute("transform") || ""],
+          [centerSegment, centerSegment.getAttribute("transform") || ""],
+          [rightSegment, rightSegment.getAttribute("transform") || ""]
+        ]);
+
+        const centers = new Map([
+          [group, getCenter(group)],
+          [leftSegment, getCenter(leftSegment)],
+          [centerSegment, getCenter(centerSegment)],
+          [rightSegment, getCenter(rightSegment)]
+        ]);
+
+        const setSegmentState = (element, pathNode, scaleX, color) => {
+          const center = centers.get(element);
+          const transform =
+            `translate(${center.x} ${center.y}) ` +
+            `scale(${scaleX} 1) ` +
+            `translate(${-center.x} ${-center.y})`;
+
+          element.setAttribute(
+            "transform",
+            [baseTransforms.get(element), transform].filter(Boolean).join(" ")
+          );
+          pathNode.setAttribute("fill", color);
+        };
+
+        const applyKey = (time, downStart, stateKey, state) => {
+          const upStart = downStart + config.keyDownDuration;
+
+          if (time >= downStart && time <= downStart + config.keyDownDuration) {
+            const p = easeKeyDown((time - downStart) / config.keyDownDuration);
+            state[`${stateKey}ScaleX`] = mix(1, config.keyTapScale, p);
+            state[`${stateKey}Fill`] = mixColor(config.baseColor, config.pressedColor, p);
+            return;
+          }
+
+          if (time >= upStart && time <= upStart + config.keyUpDuration) {
+            const p = easeKeyUp((time - upStart) / config.keyUpDuration);
+            state[`${stateKey}ScaleX`] = mix(config.keyTapScale, 1, p);
+            state[`${stateKey}Fill`] = mixColor(config.pressedColor, config.baseColor, p);
+          }
+        };
+
+        window.renderFrame = (rawTime) => {
+          const motionTime = Math.min(Math.max(rawTime, 0), motionDuration);
+
+          const state = {
+            groupScale: 1,
+            groupRotate: 0,
+            leftScaleX: 1,
+            centerScaleX: 1,
+            rightScaleX: 1,
+            leftFill: config.baseColor,
+            centerFill: config.baseColor,
+            rightFill: config.baseColor
+          };
+
+          if (motionTime <= config.shrinkDuration) {
+            const p = easeShrink(motionTime / config.shrinkDuration);
+            state.groupScale = mix(1, config.shrinkScale, p);
+          } else if (motionTime <= config.shrinkDuration + config.turnDuration) {
+            const p = easeTurn((motionTime - config.shrinkDuration) / config.turnDuration);
+            state.groupScale = config.shrinkScale;
+            state.groupRotate = mix(0, -90, p);
+          } else if (motionTime <= returnStart) {
+            state.groupScale = config.shrinkScale;
+            state.groupRotate = -90;
+          } else {
+            const p = easeReturn((motionTime - returnStart) / config.returnDuration);
+            state.groupScale = mix(config.shrinkScale, 1, p);
+            state.groupRotate = mix(-90, 0, p);
+          }
+
+          applyKey(motionTime, leftKeyStart, "left", state);
+          applyKey(motionTime, centerKeyStart, "center", state);
+          applyKey(motionTime, rightKeyStart, "right", state);
+
+          const groupCenter = centers.get(group);
+          const groupTransform =
+            `translate(${groupCenter.x} ${groupCenter.y}) ` +
+            `rotate(${state.groupRotate}) ` +
+            `scale(${state.groupScale}) ` +
+            `translate(${-groupCenter.x} ${-groupCenter.y})`;
+
+          group.setAttribute(
+            "transform",
+            [baseTransforms.get(group), groupTransform].filter(Boolean).join(" ")
+          );
+
+          setSegmentState(leftSegment, leftPath, state.leftScaleX, state.leftFill);
+          setSegmentState(centerSegment, centerPath, state.centerScaleX, state.centerFill);
+          setSegmentState(rightSegment, rightPath, state.rightScaleX, state.rightFill);
+
+          document.body.dataset.ready = "true";
+        };
+
+        window.renderFrame(0);
+      })();
+    </script>
+  </body>
+</html>
